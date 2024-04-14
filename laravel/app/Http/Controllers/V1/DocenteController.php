@@ -231,7 +231,7 @@ class DocenteController extends Controller
     public function activos()
     {
         //Listamos todos los registros activos
-        $objeto=$this->model::active();
+        $objeto=$this->model::getDocente();
        if($objeto){
         return response()->json([
             'code'=>200,

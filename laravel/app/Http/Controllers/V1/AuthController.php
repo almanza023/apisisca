@@ -101,7 +101,7 @@ class AuthController extends Controller
         $user=Auth::user();
         if($user->estado==1){
 
-            if($user->tipo==1){
+            if($user->tipo==1 || $user->tipo==2 ||$user->tipo==4){
                 $sede_id=$user->docente->sede_id;
                 $docentesGrados=CargaAcademica::gradosDocente($user->usable_id, $sede_id);
                 $grados=[];

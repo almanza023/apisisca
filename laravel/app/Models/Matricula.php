@@ -70,6 +70,7 @@ class Matricula extends Model
                 'e.apellidos',
                 'e.nombres',
                 'e.num_doc',
+                'e.fecha_nac',
                 'm.folio',
                 'g.descripcion as grado',
                 's.nombre as sede',

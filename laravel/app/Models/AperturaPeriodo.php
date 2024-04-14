@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class AperturaPeriodo extends Model
 {
@@ -44,6 +45,14 @@ class AperturaPeriodo extends Model
     public function periodo()
     {
         return $this->belongsTo('App\Models\Periodo');
+    }
+
+    public static function getAbiertos($fecha){
+        $data= DB::select('SELECT p.id, p.numero
+        FROM aperturas_periodos ap
+        INNER join periodos p on (p.id=ap.periodo_id)
+        WHERE ? BETWEEN ap.fecha_apertura AND ap.fecha_cierre AND ap.estado=1', [$fecha]);
+        return $data;
     }
 
 }

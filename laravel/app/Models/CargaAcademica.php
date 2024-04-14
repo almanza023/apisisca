@@ -130,7 +130,7 @@ class CargaAcademica extends Model
         return DB::select('SELECT distinct ca.grado_id as id,
         (SELECT descripcion FROM grados ga WHERE ga.id=ca.grado_id) AS descripcion
          FROM carga_academicas ca
-        WHERE ca.sede_id=? and ca.grado_id>=3 order by ca.grado_id asc', [$sede]);
+        WHERE ca.sede_id=?  order by ca.grado_id asc', [$sede]);
     }
 
 

@@ -10,6 +10,8 @@ Route::put('apertura-periodos/{id}', [AperturaPeriodoController::class, 'update'
 Route::delete('apertura-periodos/{id}', [AperturaPeriodoController::class, 'destroy']);
 Route::get('apertura-periodos-activos', [AperturaPeriodoController::class, 'activos']);
 Route::post('apertura-periodos/cambiarEstado', [AperturaPeriodoController::class, 'cambiarEstado']);
+Route::post('apertura-periodos-abiertos', [AperturaPeriodoController::class, 'getAbiertos']);
+
 
 
 ?>

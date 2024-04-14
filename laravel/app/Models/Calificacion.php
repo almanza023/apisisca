@@ -181,9 +181,8 @@ class Calificacion extends Model
         ->where('c.periodo_id', $periodo)
         ->where('c.orden', '>', $orden1)
         ->where('c.orden', '<', $orden2)
-        ->select('a.acronimo', 'ca.porcentaje' )
-
-        ->groupBy('a.acronimo')
+        ->select('a.acronimo', 'ca.porcentaje', 'c.orden' )
+        ->groupBy('a.acronimo', 'ca.porcentaje', 'c.orden')
         ->orderBy('c.orden', 'asc')
         ->distinct()
         ->get();

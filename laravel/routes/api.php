@@ -56,6 +56,14 @@ Route::prefix('v1')->group(function () {
           require __DIR__.'/v1/logros-disciplinarios.php';
            //Convivencia Escolar
            require __DIR__.'/v1/convivencia.php';
+            //Logros Preescolar
+          require __DIR__.'/v1/logros-preescolar.php';
+           //Preescolar
+           require __DIR__.'/v1/preescolar.php';
+           //reportes
+           require __DIR__.'/v1/reportes.php';
+           //Estadisticas
+           require __DIR__.'/v1/estadistica.php';
 
     });
 });

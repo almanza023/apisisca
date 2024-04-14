@@ -3,13 +3,14 @@
 namespace App\Http\Controllers\V1;
 
 use App\Http\Controllers\Controller;
-use App\Models\AperturaPeriodo;
+use App\Models\LogroAcademico;
+use App\Models\LogroPreescolar;
 use Illuminate\Http\Request;
 use JWTAuth;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Validator;
 
-class AperturaPeriodoController extends Controller
+class LogroPreescolarController extends Controller
 {
     protected $user;
     protected $model;
@@ -17,7 +18,7 @@ class AperturaPeriodoController extends Controller
     public function __construct(Request $request)
     {
         $token = $request->header('Authorization');
-        $this->model=AperturaPeriodo::class;
+        $this->model=LogroPreescolar::class;
         if($token != '')
             //En caso de que requiera autentifiación la ruta obtenemos el usuario y lo almacenamos en una variable, nosotros no lo utilizaremos.
             $this->user = JWTAuth::parseToken()->authenticate();
@@ -55,38 +56,33 @@ class AperturaPeriodoController extends Controller
     public function store(Request $request)
     {
         //Validamos los datos
-        $data = $request->only(
-            'fecha_apertura', 'fecha_cierre', 'periodo_id');
+        $data = $request->only('sede_id', 'grado_id', 'asignatura_id',  'descripcion');
         $validator = Validator::make($data, [
-            'fecha_apertura' => 'required|date',
-            'fecha_cierre' => 'required|date',
-            'periodo_id' => 'required',
+            'sede_id' => 'required',
+            'grado_id' => 'required',
+            'asignatura_id' => 'required',
+            'descripcion' => 'required',
         ]);
-
 
         //Si falla la validación
         if ($validator->fails()) {
             return response()->json(['error' => $validator->messages()], 400);
         }
 
-        $data=$this->model::validarPeriodo($request->periodo_id);
-        if(count($data)){
-            return response()->json([
-                'code'=>300,
-                'message' => 'El Periodo Seleccionado Ya se Encuentra Habilitado',
-            ], Response::HTTP_OK);
-        }
-        //Creamos el producto en la BD
+              //Creamos el producto en la BD
         $objeto = $this->model::create([
-            'fecha_apertura'=>($request->fecha_apertura),
-            'fecha_cierre'=>($request->fecha_cierre),
-            'periodo_id'=>($request->periodo_id)
+            'sede_id'=>($request->sede_id),
+            'grado_id'=>($request->grado_id),
+            'asignatura_id'=>($request->asignatura_id),
+            'periodo_id'=>($request->periodo_id),
+            'tipo_logro_id'=>($request->tipo_logro_id),
+            'descripcion'=>($request->descripcion),
         ]);
 
         //Respuesta en caso de que todo vaya bien.
         return response()->json([
             'code'=>200,
-            'message' => 'Apertura Creada Exitosamente',
+            'message' => 'Registro Creado Exitosamente',
         ], Response::HTTP_OK);
     }
 
@@ -125,28 +121,34 @@ class AperturaPeriodoController extends Controller
     public function update(Request $request, $id)
     {
         //Validación de datos
-        $data = $request->only(
-            'fecha_apertura', 'fecha_cierre', 'periodo_id');
+        $data = $request->only('sede_id', 'grado_id', 'asignatura_id', 'descripcion');
         $validator = Validator::make($data, [
-            'fecha_apertura' => 'required|date',
-            'fecha_cierre' => 'required|date',
-            'periodo_id' => 'required',
+            'sede_id' => 'required',
+            'grado_id' => 'required',
+            'asignatura_id' => 'required',
+            'descripcion' => 'required',
         ]);
+
+        //Si falla la validación error.
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->messages()], 400);
+        }
 
         //Buscamos la Sede
         $objeto = $this->model::findOrfail($id);
 
         //Actualizamos la sede.
         $objeto->update([
-            'periodo_id'=>($request->periodo_id),
-            'fecha_apertura'=>($request->fecha_apertura),
-            'fecha_cierre'=>($request->fecha_cierre)
+            'sede_id'=>($request->sede_id),
+            'grado_id'=>($request->grado_id),
+            'asignatura_id'=>($request->asignatura_id),
+            'descripcion'=>($request->descripcion),
         ]);
 
         //Devolvemos los datos actualizados.
         return response()->json([
             'code'=>200,
-            'message' => 'Apertura Actualizada Exitosamente',
+            'message' => 'Registro Actualizado Exitosamente',
         ], Response::HTTP_OK);
     }
 
@@ -217,27 +219,49 @@ class AperturaPeriodoController extends Controller
        }
     }
 
-    public function getAbiertos(Request $request)
+
+    public function filtrar(Request $request)
     {
-        //Validamos los datos
-        $data = $request->only(
-            'fecha');
-        $validator = Validator::make($data, [
-            'fecha' => 'required|date'
-        ]);
+        //Validación de datos
+        $data = $request->only('sede_id', 'grado_id', 'asignatura_id');
+        //Buscamos el producto
+        $objeto = $this->model::filtrar($request->sede_id, $request->grado_id,
+         $request->asignatura_id);
 
-
-        //Si falla la validación
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->messages()], 400);
-        }
-
-        $data=$this->model::getAbiertos($request->fecha);
+        //Devolvemos los datos actualizados.
         return response()->json([
             'code'=>200,
-            'data' => $data
+            'message' => '',
+            'data' => $objeto
         ], Response::HTTP_OK);
     }
+
+    public function getDataFiltro(Request $request)
+    {
+        //Validación de datos
+        $data = $request->only('sede_id', 'grado_id', 'asignatura_id');
+        $validator = Validator::make($data, [
+            'sede_id' => 'required',
+            'grado_id' => 'required',
+            'asignatura_id' => 'required',
+        ]);
+         //Si falla la validación error.
+         if ($validator->fails()) {
+            return response()->json(['error' => $validator->messages()], 400);
+        }
+        //Buscamos el producto
+        $objeto = $this->model::getFiltro($request->sede_id, $request->grado_id,
+         $request->asignatura_id);
+
+        //Devolvemos los datos actualizados.
+        return response()->json([
+            'code'=>200,
+            'message' => '',
+            'data' => $objeto
+        ], Response::HTTP_OK);
+    }
+
+
 
 
 
