@@ -9,7 +9,7 @@ class TipoAsignatura extends Model
 {
 
     protected $table = 'tipo_asignaturas';
-    protected $fillable = ['nombre'];
+    protected $fillable = ['nombre', 'descripcion', 'preescolar'];
     protected $hidden=['created_at','updated_at'];
 
     public static function active(){

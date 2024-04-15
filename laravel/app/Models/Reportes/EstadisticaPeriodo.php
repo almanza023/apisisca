@@ -15,7 +15,7 @@ class EstadisticaPeriodo extends Model
 {
 
    public static function reporte($pdf, $data, $periodo){
-
+    $base64String ="";
     $titulo='ESTADISTICAS DE PERIODO';
     Auxiliar::headerPdf($pdf, $periodo, $titulo);
     $pdf->SetFont('Arial', '', 10);
@@ -24,7 +24,7 @@ class EstadisticaPeriodo extends Model
     $pdf->Cell(190, 5, 'GRADO: ' .$grado, 1, 1);
     $pdf->Cell(60, 5, 'SEDE: ' . $sede, 1, 0, 'J');
     $pdf->Cell(60, 5, 'PERIODO: ' . $periodo, 1, 0, 'J');
-    $pdf->Cell(70, 5, utf8_decode(' AÑO: 2021 '), 1, 1, 'J');
+    $pdf->Cell(70, 5, utf8_decode(' AÑO: 2024 '), 1, 1, 'J');
     $pdf->Ln(10);
     $pdf->SetFont('Arial', 'B', 9);
     $pdf->Cell(10, 6, 'PUE  ', 1, 0, 'C', 1);
@@ -46,7 +46,8 @@ class EstadisticaPeriodo extends Model
 
             $pdf->Cell(70, 6, '  ', 1, 1, 'C');
         }
-    $pdf->Output();
+        $base64String = chunk_split(base64_encode($pdf->Output('S')));
+        return $base64String;
     exit;
 
    }

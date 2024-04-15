@@ -2,13 +2,7 @@
 
 namespace App\Models\Reportes;
 
-use App\Models\CargaAcademica;
-use App\models\Convivencia;
-use App\models\DireccionGrado;
-use App\Models\LogroDisciplinario;
-use App\Models\Nivelacion;
-use App\Models\Prefijo;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+
 use Illuminate\Database\Eloquent\Model;
 
 class ReporteDimensiones extends Model
@@ -59,7 +53,7 @@ class ReporteDimensiones extends Model
         $pdf->SetFont('Arial', 'I', 8);
         $pdf->Cell(0, 10, utf8_decode('Pagína N°: ') . $pdf->PageNo(), 0, 0, 'R');
         $pdf->Ln();
-        $pdf->Cell(0, 10, 'Impreso por SIA INEDA 2021', 0, 0, 'R');
+        $pdf->Cell(0, 10, 'Impreso por SIA INEDA 2024', 0, 0, 'R');
         $pdf->Output();
         exit;
 

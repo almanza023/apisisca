@@ -18,6 +18,7 @@ use App\Models\Reportes\ConsolidadoDos;
 use App\Models\Reportes\ConsolidadoUno;
 use App\Models\Reportes\ConsolidadoTres;
 use App\Models\Reportes\EstadisticaPeriodo;
+use App\Models\Reportes\ReporteArea;
 use App\Models\Reportes\ReporteDimensiones;
 use App\Models\Reportes\ReporteNotas;
 use App\Models\Reportes\ReporteSubidaDocente;
@@ -49,20 +50,28 @@ class ReporteController extends Controller
     public function ReportEstadisticas(Request $request)
     {
         $validated = $request->validate([
-            'sede' => 'required',
-            'grado' => 'required',
-            'periodo' => 'required',
+            'sede_id' => 'required',
+            'grado_id' => 'required',
+            'periodo_id' => 'required',
         ]);
 
-        $grado=$request->grado;
-        $sede=$request->sede;
-        $periodo=$request->periodo;
+        $grado=$request->grado_id;
+        $sede=$request->sede_id;
+        $periodo=$request->periodo_id;
         $pdf = app('Fpdf');
         $data=Puesto::getPuestos($grado, $periodo);
         if(count($data)>0){
-            EstadisticaPeriodo::reporte($pdf, $data, $periodo);
+           
+            $base64String= EstadisticaPeriodo::reporte($pdf, $data, $periodo);
+            return response()->json([
+                'code'=>200,
+                'pdf' => $base64String
+            ], Response::HTTP_OK);
         }else{
-            return redirect()->route('reporte-boletines')->with(['warning'=>'PRIMERO DEBE GENERAR LOS BOLETINES']);
+            return response()->json([
+                'code'=>400,
+                'message' => 'Debe Generar Boletines para Obtener las Estadisticas'
+            ], Response::HTTP_OK);
         }
 
 
@@ -219,6 +228,37 @@ class ReporteController extends Controller
         ], Response::HTTP_OK);
 
         
+    }
+
+    public function ReportAreas(Request $request)
+    {
+        $validated = $request->validate([
+            'sede_id' => 'required',
+            'grado_id' => 'required',
+            'periodo_id' => 'required',
+            'asignatura_id' => 'required',
+        ]);
+
+        $grado=$request->grado_id;
+        $sede=$request->sede_id;
+        $periodo=$request->periodo_id;       
+        $pdf = app('Fpdf');
+        $data=Calificacion::getAreaMat($grado, $periodo);
+        if(count($data)>0){
+           
+            $base64String= ReporteArea::reporte($pdf, $data, $periodo);
+            return response()->json([
+                'code'=>200,
+                'pdf' => $base64String
+            ], Response::HTTP_OK);
+        }else{
+            return response()->json([
+                'code'=>400,
+                'message' => 'No se encontrarón calificaciones'
+            ], Response::HTTP_OK);
+        }
+
+
     }
 
 

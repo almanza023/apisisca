@@ -97,4 +97,16 @@ class Preescolar extends Model
         WHERE m.id=? ORDER BY car.asignatura_id ASC', [$periodo_id, $matricula_id]);
     }
 
+    public static function getDatosByMatriculaPeriodo($matricula, $periodo, $tipo){
+        return Db::table('preescolar as p')
+        ->join('asignaturas as a', 'a.id', '=', 'p.asignatura_id') 
+        ->join('tipo_asignaturas as ta', 'ta.id', '=', 'a.tipo_asignatura_id')    
+        ->select('a.nombre',  'p.logro_a', 'p.logro_b', 'p.logro_c', 'p.logro_d' )
+        ->where('p.matricula_id', $matricula)
+       ->where('p.periodo_id', $periodo)
+       ->where('a.tipo_asignatura_id', $tipo)
+       ->get();
+
+    }
+
 }

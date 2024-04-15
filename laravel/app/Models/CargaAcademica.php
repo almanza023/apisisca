@@ -133,5 +133,17 @@ class CargaAcademica extends Model
         WHERE ca.sede_id=?  order by ca.grado_id asc', [$sede]);
     }
 
+    public static function getBySedeGrado($sede, $grado){
+
+        return DB::table('carga_academicas as ca')
+        ->join('asignaturas as ga', 'a.id', '=', 'ca.asignatura_id')
+        ->join('tipo_asignaturas as ta', 'ta.id', '=', 'a.tipo_asignatura_id')
+        ->select('a.nombre', 'ta.descripcion', 'a.id')
+        ->where('ca.sede_id', $sede)
+        ->where('ca.grado_id', $grado)        
+        ->get();
+
+    }
+
 
 }
