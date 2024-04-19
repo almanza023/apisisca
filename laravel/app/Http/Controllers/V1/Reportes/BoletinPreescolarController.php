@@ -68,12 +68,12 @@ class BoletinPreescolarController extends Controller
                 $pdf->SetFont('Arial', '', 10);
                 $nom = $matricula->apellidos . ' ' . $matricula->nombres;
                 $pdf->Cell(113, 6, 'Nombres: ' . utf8_decode($nom) , 1, 0, 'J');
-                $pdf->Cell(47, 6, 'Grado: ' . utf8_decode($matricula->grado) , 1, 0, 'J');
+                $pdf->Cell(47, 6, 'Grado: ' . utf8_decode('PREESCOLAR') , 1, 0, 'J');
                 $pdf->Cell(30, 6, 'Periodo: ' . $periodo, 1, 1, 'J');
                 $pdf->Cell(40, 6, 'Sede: ' . $matricula->sede, 1, 0, 'J');
                 $pdf->Cell(40, 6, utf8_decode(' N° Doc: ') . $matricula->num_doc, 1, 0, 'J');
                 $pdf->Cell(33, 6, utf8_decode(' N° Folio: ') . $matricula->folio, 1, 0, 'J');
-                $pdf->Cell(47, 6, utf8_decode(' Jornada: MATINAL') , 1, 0, 'J');
+                $pdf->Cell(47, 6, utf8_decode(' Grupo: '.$matricula->grado) , 1, 0, 'J');
                 $pdf->Cell(30, 6, utf8_decode(' Año: 2024 ') , 1, 1, 'J');
                 $pdf->Ln();
                 

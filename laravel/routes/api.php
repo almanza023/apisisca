@@ -23,6 +23,7 @@ Route::prefix('v1')->group(function () {
         //Todo lo que este dentro de este grupo requiere verificaci��n de usuario.
 
         Route::post('logout', [AuthController::class, 'logout']);
+        Route::post('cambiar-clave', [AuthController::class, 'cambiarClave']);
         Route::post('get-user', [AuthController::class, 'getUser']);
         //Grados
         require __DIR__.'/v1/grados.php';

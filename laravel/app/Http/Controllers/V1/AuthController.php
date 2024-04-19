@@ -204,4 +204,87 @@ class AuthController extends Controller
         //Devolvemos los datos del usuario si todo va bien.
         return response()->json(['user' => $user]);
     }
+
+    public function cambiarClave(Request $request)
+    {
+        //Indicamos que solo queremos recibir name, email y password de la request
+        $data = $request->only('nuevaclave', 'confirmacion', 'usuario_id');
+
+        //Realizamos las validaciones
+        $validator = Validator::make($data, [
+            'nuevaclave' => 'required|string',
+            'confirmacion' => 'required|string',
+            'usuario_id' => 'required'          
+        ]);
+
+        //Devolvemos un error si fallan las validaciones
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->messages()], 400);
+        }
+
+        $user=User::find($request->usuario_id);
+        $password=bcrypt($request->nuevaclave);
+        $user->password=$password;
+        $user->save();      
+
+     
+        //Devolvemos la respuesta con el token del usuario
+      if($user){
+        return response()->json([
+            'code'=>200,
+            'message' => 'Contraseña Actualizada Exitosamente',     
+
+        ], Response::HTTP_OK);
+      }else{
+        return response()->json([
+            'code'=>400,
+            'message' => 'Error al actualizar Contraseña',     
+
+        ], Response::HTTP_OK);
+      }
+    }
+
+    public function update(Request $request)
+    {
+        //Indicamos que solo queremos recibir name, email y password de la request
+        $data = $request->only('nombre', 'clave', 'documento', 'usuario_id');
+
+        //Realizamos las validaciones
+        $validator = Validator::make($data, [
+            'nombre' => 'required|string',           
+            'documento' => 'required',
+            'usuario_id' => 'required'          
+        ]);
+
+        //Devolvemos un error si fallan las validaciones
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->messages()], 400);
+        }
+
+        $user=User::find($request->usuario_id);       
+        $user->name=$request->name;
+        $user->documento=$request->documento;
+        if(!empty($request->clave)){
+            $user->password=bcrypt($request->clave);
+        }
+        $user->save();      
+
+     
+        //Devolvemos la respuesta con el token del usuario
+      if($user){
+        return response()->json([
+            'code'=>200,
+            'message' => 'Datos Actualizado Exitosamente',     
+
+        ], Response::HTTP_OK);
+      }else{
+        return response()->json([
+            'code'=>400,
+            'message' => 'Error al actualizar Contraseña',     
+
+        ], Response::HTTP_OK);
+      }
+    }
+
+   
 }

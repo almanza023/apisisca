@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\AperturaPeriodo;
+use App\Models\Calificacion;
 use App\Models\CargaAcademica;
 use App\Models\DireccionGrado;
 use App\Models\Docente;
@@ -39,11 +41,26 @@ class EstadisticaController extends Controller
        $totalSede=Sede::count();
        $totaldocentes=Docente::count();
        $totalmatriculas=Matricula::count();
+       $totalAsignacion=CargaAcademica::where('grado_id','>=','3')->count();
+       $aperturaPerido=AperturaPeriodo::getActivado();
+       $porcentaje=0;
+       $calificadas=0;
+       if(!empty($aperturaPerido)){
+        $periodo_id=$aperturaPerido->periodo_id;      
+        $totalCal=Calificacion::getTotalCalificadas($periodo_id);
+        $calificadas=count($totalCal);
+        $porcentaje=round(($calificadas/$totalAsignacion)*100,2);
+       }
+    
+      
 
        $contadores=[
         'sedes'=>$totalSede,
         'docentes'=>$totaldocentes,
         'matriculas'=>$totalmatriculas,
+        'asignadas'=>$totalAsignacion,
+        'calificadas'=>$calificadas,
+        'porcentaje'=>$porcentaje,
        ];
        if($contadores){
         return response()->json([
@@ -71,12 +88,29 @@ class EstadisticaController extends Controller
                 $grados.=$item->grado->descripcion."-";
         }
         }
+        $aperturaPerido=AperturaPeriodo::getActivado();
+        $periodo="";
+        $calificadas=0;
+        $avance=0;
+       if(!empty($aperturaPerido)){
+        $periodo=$aperturaPerido->fecha_apertura." - ".$aperturaPerido->fecha_cierre;
+        $objCal=CargaAcademica::getTotalAsigaCalDoc($id, $aperturaPerido->periodo_id);
+        $calificadas=count($objCal);
+       }
+      if($totalAsignacion>0){
+        $avance=round(($calificadas/$totalAsignacion)*100,2);
+      }
+
+       
         
 
        $contadores=[
         'sede'=>$sede,
         'direcciongrado'=>$grados,
         'asignaciones'=>$totalAsignacion,
+        'periodo'=>$periodo,
+        'calificadas'=>$calificadas,
+        'avance'=>$avance,
        ];
        if($contadores){
         return response()->json([

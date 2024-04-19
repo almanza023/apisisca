@@ -241,12 +241,97 @@ class ReporteController extends Controller
 
         $grado=$request->grado_id;
         $sede=$request->sede_id;
-        $periodo=$request->periodo_id;       
+        $periodo=$request->periodo_id;    
+        $area="";    
+        if($request->asignatura_id=='MAT' ||
+        $request->asignatura_id=='CAS'||
+        $request->asignatura_id=='CNA' ||
+        $request->asignatura_id=='CSOC'){
+            switch ($request->asignatura_id) {
+                case 'MAT':
+                    $area=1;
+                    break;
+                    case 'CAS':
+                        $area=2;
+                        break;
+                        case 'CNA':
+                            $area=3;
+                            break;
+                            case 'CSOC':
+                                $area=4;
+                                break;
+                
+                default:
+                    # code...
+                    break;
+            }
+        }else{
+            $tipo=CargaAcademica::getDocente($sede, $grado, $request->asignatura_id);
+            if(empty($tipo)){
+                return response()->json([
+                    'code'=>400,
+                    'message' => 'No se existen asignaturas compartidas'
+                ], Response::HTTP_OK);
+            }
+            switch ($tipo->area) {
+                case 'MAT':
+                    $area=1;
+                    break;
+                    case 'CAS':
+                        $area=2;
+                        break;
+                        case 'CNA':
+                            $area=3;
+                            break;
+                            case 'CSOC':
+                                $area=4;
+                                break;
+                
+                default:
+                    # code...
+                    break;
+            }           
+        }
+        
+       
         $pdf = app('Fpdf');
-        $data=Calificacion::getAreaMat($grado, $periodo);
+        $data=[];
+        //MAT
+        if($area==1){
+            $data=Calificacion::getAreaMat($sede, $grado, $periodo );       
+        }
+        //CAS
+        if($area==2){
+            $data=Calificacion::getAreaLen($sede, $grado, $periodo );       
+        }   
+        //MAT
+        if($area==3){
+            $data=Calificacion::getAreaNat($sede, $grado, $periodo );       
+        }
+        //CAS
+        if($area==4){
+            $data=Calificacion::getAreasSoc($sede, $grado, $periodo );       
+        }     
+        
         if(count($data)>0){
            
-            $base64String= ReporteArea::reporte($pdf, $data, $periodo);
+            $base64String= "";
+            //MAT
+            if($area==1){
+                $base64String= ReporteArea::reporte($pdf, $data, $periodo);
+            }
+            //CAS
+            if($area==2){
+                $base64String= ReporteArea::reporteLenguaje($pdf, $data, $periodo);
+            }  
+            //CNAT
+            if($area==3){             
+                $base64String= ReporteArea::reporteNaturales($pdf, $data, $periodo, $grado);
+            }
+            //CSOC
+            if($area==4){
+                $base64String= ReporteArea::reporteSociales($pdf, $data, $periodo, $grado);
+            } 
             return response()->json([
                 'code'=>200,
                 'pdf' => $base64String

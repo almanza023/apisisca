@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('login', [AuthController::class, 'authenticate']);
 Route::post('register', [AuthController::class, 'register']);
+Route::post('user/actualizar', [AuthController::class, 'update']);
 // Agrega aquí otras rutas relacionadas con la autenticación...
 
 ?>

@@ -10,7 +10,8 @@ class CargaAcademica extends Model
 {
 
     protected $table = 'carga_academicas';
-    protected $fillable = ['sede_id', 'docente_id', 'grado_id', 'asignatura_id', 'ihs', 'porcentaje', 'estado'];
+    protected $fillable = ['sede_id', 'docente_id', 'grado_id', 'asignatura_id', 'ihs', 
+    'porcentaje', 'area', 'estado'];
 
     public function docente()
     {
@@ -144,6 +145,15 @@ class CargaAcademica extends Model
         ->get();
 
     }
+
+    public static function getTotalAsigaCalDoc($docente, $periodo){
+        return DB::select('SELECT  distinct c.asignatura_id, m.grado_id  from calificaciones c 
+        inner join matriculas m on m.id=c.matricula_id 
+        inner join carga_academicas ca on  ca.asignatura_id=c.asignatura_id 
+        where ca.docente_id =? and periodo_id =?', [$docente, $periodo]);
+    }
+
+    
 
 
 }

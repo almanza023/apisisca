@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Docente;
 use App\Models\User;
 use Illuminate\Http\Request;
 use JWTAuth;
@@ -55,15 +56,12 @@ class UsuarioController extends Controller
     public function store(Request $request)
     {
         //Validamos los datos
-        $data = $request->only('nombre', 'usuario', 'numerodocumento',
-        'password', 'rol', 'campanna');
-        $validator = Validator::make($data, [
-            'nombre' => 'required|string',
-            'usuario' => 'required|string',
-            'numerodocumento' => 'required|numeric|min:6',
-            'password' => 'required|string:min:6',
-            'rol' => 'required|numeric',
-            'campanna' => 'required|numeric',
+        $data = $request->only('password', 'documento',);
+        
+        $validator = Validator::make($data, [           
+            'documento' => 'required|numeric|min:6',
+            'password' => 'required|string:min:6',        
+            
         ]);
 
         //Si falla la validación
@@ -71,13 +69,21 @@ class UsuarioController extends Controller
             return response()->json(['error' => $validator->messages()], 400);
         }
 
+        $docente=Docente::where('documento', $request->documento)->first();
+        if(empty($docente)){
+            return response()->json([
+                'code'=>200,
+                'message' => 'Debe Crear el Docente Primero',
+                'data' => []
+            ], Response::HTTP_OK);
+        }
+
         //Creamos el producto en la BD
         $objeto = $this->model::create([
-            'name' => $request->nombre,
-            'username' => $request->usuario,
-            'numerodocumento' => $request->numerodocumento,
-            'rol' => $request->rol,
-            'campanna_id' => $request->campanna,
+            'name' => $docente->nombres.' '.$docente->apellidos,           
+            'documento' => $request->documento,           
+            'email' => $docente->correo,           
+            'usable_id' => $docente->id,
             'password' => bcrypt($request->password)
         ]);
 
@@ -126,16 +132,14 @@ class UsuarioController extends Controller
     public function update(Request $request, $id)
     {
         //Validación de datos
-        $data = $request->only('nombre', 'usuario', 'numerodocumento',
-         'password', 'rol', 'campanna');
+        $data = $request->only('nombre', 'password', 'documento', 'email',);
         $validator = Validator::make($data, [
             'nombre' => 'required|string',
-            'usuario' => 'required|string',
-            'numerodocumento' => 'required|numeric|min:6',
-            'password' => 'required|string:min:6',
-            'rol' => 'required|numeric',
-            'campanna' => 'required|numeric',
+            'email' => 'required|string',          
+            'documento' => 'required|numeric|min:6',           
+            
         ]);
+        
 
         //Si falla la validación error.
         if ($validator->fails()) {
@@ -144,16 +148,22 @@ class UsuarioController extends Controller
 
         //Buscamos el producto
         $objeto = $this->model::findOrfail($id);
-
-        $objeto->update([
-            'name' => $request->nombre,
-            'username' => $request->usuario,
-            'numerodocumento' => $request->numerodocumento,
-            'email' => $request->email,
-            'rol' => $request->rol,
-            'campanna_id' => $request->campanna,
-            'password' => bcrypt($request->password)
-        ]);
+        if(!empty($request->password)){
+            $objeto->update([
+                'name' => $request->nombre,           
+                'documento' => $request->documento,
+                'email' => $request->email,            
+                'password' => bcrypt($request->password)
+            ]);
+        }else{
+            $objeto->update([
+                'name' => $request->nombre,           
+                'documento' => $request->documento,
+                'email' => $request->email,         
+               
+            ]);
+        }
+       
 
         //Respuesta en caso de que todo vaya bien.
         return response()->json([

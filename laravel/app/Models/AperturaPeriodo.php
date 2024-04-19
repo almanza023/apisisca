@@ -55,4 +55,8 @@ class AperturaPeriodo extends Model
         return $data;
     }
 
+    public static function getActivado(){
+        return AperturaPeriodo::where('estado', 1)->first();
+    }
+
 }
