@@ -374,149 +374,150 @@ class Calificacion extends Model
     }
 
     public static function getAreaMat($sede, $grado, $periodo){
-        return DB::select("SELECT 
-            m.id AS matricula_id, concat(e.apellidos,' ', e.nombres) as estudiante, s.nombre as sede, g.descripcion as grado, 
-            SUM(CASE WHEN a.nombre = 'ESTADISTICA' THEN (c.nota) ELSE NULL END) as notaasig1,   
+        return DB::select("SELECT
+            m.id AS matricula_id, concat(e.apellidos,' ', e.nombres) as estudiante, s.nombre as sede, g.descripcion as grado,
+            SUM(CASE WHEN a.nombre = 'ESTADISTICA' THEN (c.nota) ELSE NULL END) as notaasig1,
             AVG(CASE WHEN a.nombre = 'ESTADISTICA' THEN (c.nota*(ca.porcentaje/100)) ELSE NULL END) as asig1 ,
-            SUM(CASE WHEN a.nombre = 'MATEMATICA' THEN (c.nota) ELSE NULL END) as notasig2,   
-            AVG(CASE WHEN a.nombre = 'MATEMATICA' THEN (c.nota*(ca.porcentaje/100)) ELSE NULL END) AS asig2,  
+            SUM(CASE WHEN a.nombre = 'MATEMATICA' THEN (c.nota) ELSE NULL END) as notasig2,
+            AVG(CASE WHEN a.nombre = 'MATEMATICA' THEN (c.nota*(ca.porcentaje/100)) ELSE NULL END) AS asig2,
             SUM(CASE WHEN a.nombre IN ('ESTADISTICA', 'MATEMATICA') THEN c.nota * ca.porcentaje / 100 ELSE 0 END) AS definitiva
-        FROM 
+        FROM
             calificaciones c
-        INNER JOIN 
+        INNER JOIN
             matriculas m ON m.id = c.matricula_id
-        INNER JOIN 
-            estudiantes e ON e.id = m.estudiante_id 
-        INNER JOIN 
+        INNER JOIN
+            estudiantes e ON e.id = m.estudiante_id
+        INNER JOIN
             sedes s ON s.id = m.sede_id
-        INNER JOIN 
+        INNER JOIN
             grados g ON g.id = m.grado_id
-        INNER JOIN 
+        INNER JOIN
             asignaturas a ON a.id = c.asignatura_id
-        INNER JOIN 
-            carga_academicas ca ON ca.sede_id = m.sede_id 
-                                AND ca.grado_id = m.grado_id 
+        INNER JOIN
+            carga_academicas ca ON ca.sede_id = m.sede_id
+                                AND ca.grado_id = m.grado_id
                                 AND ca.asignatura_id = c.asignatura_id
-        WHERE 
+        WHERE
             m.sede_id = ?
             and m.grado_id = ?
             and c.periodo_id = ?
             AND ca.area = 'MAT'
-        GROUP BY 
+        GROUP BY
             m.id", [ $sede,$grado, $periodo ]);
     }
 
     public static function getAreaLen($sede, $grado, $periodo){
-        return DB::select("SELECT 
-            m.id AS matricula_id, concat(e.apellidos,' ', e.nombres) as estudiante, s.nombre as sede, g.descripcion as grado, 
-            SUM(CASE WHEN a.nombre = 'LECTURA CRITICA' THEN (c.nota) ELSE NULL END) as notaasig1,   
+        return DB::select("SELECT
+            m.id AS matricula_id, concat(e.apellidos,' ', e.nombres) as estudiante, s.nombre as sede, g.descripcion as grado,
+            SUM(CASE WHEN a.nombre = 'LECTURA CRITICA' THEN (c.nota) ELSE NULL END) as notaasig1,
             AVG(CASE WHEN a.nombre = 'LECTURA CRITICA' THEN (c.nota*(ca.porcentaje/100)) ELSE NULL END) as asig1 ,
-            SUM(CASE WHEN a.nombre = 'CASTELLANO' THEN (c.nota) ELSE NULL END) as notasig2,   
-            AVG(CASE WHEN a.nombre = 'CASTELLANO' THEN (c.nota*(ca.porcentaje/100)) ELSE NULL END) AS asig2,  
+            SUM(CASE WHEN a.nombre = 'CASTELLANO' THEN (c.nota) ELSE NULL END) as notasig2,
+            AVG(CASE WHEN a.nombre = 'CASTELLANO' THEN (c.nota*(ca.porcentaje/100)) ELSE NULL END) AS asig2,
             SUM(CASE WHEN a.nombre IN ('LECTURA CRITICA', 'CASTELLANO') THEN c.nota * ca.porcentaje / 100 ELSE 0 END) AS definitiva
-        FROM 
+        FROM
             calificaciones c
-        INNER JOIN 
+        INNER JOIN
             matriculas m ON m.id = c.matricula_id
-        INNER JOIN 
-            estudiantes e ON e.id = m.estudiante_id 
-        INNER JOIN 
+        INNER JOIN
+            estudiantes e ON e.id = m.estudiante_id
+        INNER JOIN
             sedes s ON s.id = m.sede_id
-        INNER JOIN 
+        INNER JOIN
             grados g ON g.id = m.grado_id
-        INNER JOIN 
+        INNER JOIN
             asignaturas a ON a.id = c.asignatura_id
-        INNER JOIN 
-            carga_academicas ca ON ca.sede_id = m.sede_id 
-                                AND ca.grado_id = m.grado_id 
+        INNER JOIN
+            carga_academicas ca ON ca.sede_id = m.sede_id
+                                AND ca.grado_id = m.grado_id
                                 AND ca.asignatura_id = c.asignatura_id
-        WHERE 
+        WHERE
             m.sede_id = ?
             and m.grado_id = ?
             and c.periodo_id = ?
             AND ca.area = 'CAS'
-        GROUP BY 
+        GROUP BY
             m.id", [ $sede,$grado, $periodo ]);
     }
     public static function getAreaNat($sede, $grado, $periodo){
-        return DB::select("SELECT 
-            m.id AS matricula_id, concat(e.apellidos,' ', e.nombres) as estudiante, s.nombre as sede, g.descripcion as grado, 
-            SUM(CASE WHEN a.nombre = 'QUIMICA' THEN (c.nota) ELSE NULL END) as notaasig1,   
+        return DB::select("SELECT
+            m.id AS matricula_id, concat(e.apellidos,' ', e.nombres) as estudiante, s.nombre as sede, g.descripcion as grado,
+            SUM(CASE WHEN a.nombre = 'QUIMICA' THEN (c.nota) ELSE NULL END) as notaasig1,
             AVG(CASE WHEN a.nombre = 'QUIMICA' THEN (c.nota*(ca.porcentaje/100)) ELSE NULL END) as asig1 ,
-            SUM(CASE WHEN a.nombre = 'FISICA' THEN (c.nota) ELSE NULL END) as notasig2,   
-            AVG(CASE WHEN a.nombre = 'FISICA' THEN (c.nota*(ca.porcentaje/100)) ELSE NULL END) AS asig2,  
-            SUM(CASE WHEN a.nombre = 'BIOLOGIA' THEN (c.nota) ELSE NULL END) as notasig3,   
-            AVG(CASE WHEN a.nombre = 'BIOLOGIA' THEN (c.nota*(ca.porcentaje/100)) ELSE NULL END) AS asig3,  
+            SUM(CASE WHEN a.nombre = 'FISICA' THEN (c.nota) ELSE NULL END) as notasig2,
+            AVG(CASE WHEN a.nombre = 'FISICA' THEN (c.nota*(ca.porcentaje/100)) ELSE NULL END) AS asig2,
+            SUM(CASE WHEN a.nombre = 'BIOLOGIA' THEN (c.nota) ELSE NULL END) as notasig3,
+            AVG(CASE WHEN a.nombre = 'BIOLOGIA' THEN (c.nota*(ca.porcentaje/100)) ELSE NULL END) AS asig3,
             SUM(CASE WHEN a.nombre IN ('QUIMICA', 'FISICA', 'BIOLOGIA') THEN c.nota * ca.porcentaje / 100 ELSE 0 END) AS definitiva
-        FROM 
+        FROM
             calificaciones c
-        INNER JOIN 
+        INNER JOIN
             matriculas m ON m.id = c.matricula_id
-        INNER JOIN 
-            estudiantes e ON e.id = m.estudiante_id 
-        INNER JOIN 
+        INNER JOIN
+            estudiantes e ON e.id = m.estudiante_id
+        INNER JOIN
             sedes s ON s.id = m.sede_id
-        INNER JOIN 
+        INNER JOIN
             grados g ON g.id = m.grado_id
-        INNER JOIN 
+        INNER JOIN
             asignaturas a ON a.id = c.asignatura_id
-        INNER JOIN 
-            carga_academicas ca ON ca.sede_id = m.sede_id 
-                                AND ca.grado_id = m.grado_id 
+        INNER JOIN
+            carga_academicas ca ON ca.sede_id = m.sede_id
+                                AND ca.grado_id = m.grado_id
                                 AND ca.asignatura_id = c.asignatura_id
-        WHERE 
+        WHERE
             m.sede_id = ?
             and m.grado_id = ?
             and c.periodo_id = ?
             AND ca.area = 'CNA'
-        GROUP BY 
+        GROUP BY
             m.id", [ $sede,$grado, $periodo ]);
     }
 
     public static function getAreasSoc($sede, $grado, $periodo){
-        return DB::select("SELECT 
-            m.id AS matricula_id, concat(e.apellidos,' ', e.nombres) as estudiante, s.nombre as sede, g.descripcion as grado, 
-            SUM(CASE WHEN a.nombre = 'CONSTITUCION NACIONAL' THEN (c.nota) ELSE NULL END) as notaasig1,   
+        return DB::select("SELECT
+            m.id AS matricula_id, concat(e.apellidos,' ', e.nombres) as estudiante, s.nombre as sede, g.descripcion as grado,
+            SUM(CASE WHEN a.nombre = 'CONSTITUCION NACIONAL' THEN (c.nota) ELSE NULL END) as notaasig1,
             AVG(CASE WHEN a.nombre = 'CONSTITUCION NACIONAL' THEN (c.nota*(ca.porcentaje/100)) ELSE NULL END) as asig1 ,
-            SUM(CASE WHEN a.nombre = 'CATEDRA DE PAZ' THEN (c.nota) ELSE NULL END) as notasig2,   
-            AVG(CASE WHEN a.nombre = 'CATEDRA DE PAZ' THEN (c.nota*(ca.porcentaje/100)) ELSE NULL END) AS asig2,  
-            SUM(CASE WHEN a.nombre = 'SOCIALES INTEGRADAS' THEN (c.nota) ELSE NULL END) as notasig3,   
+            SUM(CASE WHEN a.nombre = 'CATEDRA DE PAZ' THEN (c.nota) ELSE NULL END) as notasig2,
+            AVG(CASE WHEN a.nombre = 'CATEDRA DE PAZ' THEN (c.nota*(ca.porcentaje/100)) ELSE NULL END) AS asig2,
+            SUM(CASE WHEN a.nombre = 'SOCIALES INTEGRADAS' THEN (c.nota) ELSE NULL END) as notasig3,
             AVG(CASE WHEN a.nombre = 'SOCIALES INTEGRADAS' THEN (c.nota*(ca.porcentaje/100)) ELSE NULL END) AS asig3,
-            SUM(CASE WHEN a.nombre = 'CIENCIAS POLITICAS' THEN (c.nota) ELSE NULL END) as notasig4,   
-            AVG(CASE WHEN a.nombre = 'CIENCIAS POLITICAS' THEN (c.nota*(ca.porcentaje/100)) ELSE NULL END) AS asig4,    
+            SUM(CASE WHEN a.nombre = 'CIENCIAS POLITICAS' THEN (c.nota) ELSE NULL END) as notasig4,
+            AVG(CASE WHEN a.nombre = 'CIENCIAS POLITICAS' THEN (c.nota*(ca.porcentaje/100)) ELSE NULL END) AS asig4,
             SUM(CASE WHEN a.nombre IN ('CONSTITUCION NACIONAL', 'CATEDRA DE PAZ', 'SOCIALES INTEGRADAS', 'CIENCIAS POLITICAS') THEN c.nota * ca.porcentaje / 100 ELSE 0 END) AS definitiva
-        FROM 
+        FROM
             calificaciones c
-        INNER JOIN 
+        INNER JOIN
             matriculas m ON m.id = c.matricula_id
-        INNER JOIN 
-            estudiantes e ON e.id = m.estudiante_id 
-        INNER JOIN 
+        INNER JOIN
+            estudiantes e ON e.id = m.estudiante_id
+        INNER JOIN
             sedes s ON s.id = m.sede_id
-        INNER JOIN 
+        INNER JOIN
             grados g ON g.id = m.grado_id
-        INNER JOIN 
+        INNER JOIN
             asignaturas a ON a.id = c.asignatura_id
-        INNER JOIN 
-            carga_academicas ca ON ca.sede_id = m.sede_id 
-                                AND ca.grado_id = m.grado_id 
+        INNER JOIN
+            carga_academicas ca ON ca.sede_id = m.sede_id
+                                AND ca.grado_id = m.grado_id
                                 AND ca.asignatura_id = c.asignatura_id
-        WHERE 
+        WHERE
             m.sede_id = ?
             and m.grado_id = ?
             and c.periodo_id = ?
             AND ca.area = 'CSOC'
-        GROUP BY 
+        GROUP BY
             m.id", [ $sede,$grado, $periodo ]);
     }
+
     public static function getTotalCalificadas($periodo_id,){
-        return DB::select('SELECT distinct c.asignatura_id, m.grado_id  from calificaciones c 
-        inner join matriculas m on m.id=c.matricula_id 
-        inner join carga_academicas ca on  ca.asignatura_id=c.asignatura_id 
-        where periodo_id =1 and ca.grado_id >=?', [$periodo_id]);
+        return DB::select('SELECT distinct c.asignatura_id, m.grado_id  from calificaciones c
+        inner join matriculas m on m.id=c.matricula_id
+        inner join carga_academicas ca on  ca.asignatura_id=c.asignatura_id
+        where periodo_id =?', [$periodo_id]);
     }
 
-    
+
 
 
 

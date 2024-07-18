@@ -41,18 +41,18 @@ class EstadisticaController extends Controller
        $totalSede=Sede::count();
        $totaldocentes=Docente::count();
        $totalmatriculas=Matricula::count();
-       $totalAsignacion=CargaAcademica::where('grado_id','>=','3')->count();
+       $totalAsignacion=CargaAcademica::where('grado_id','>=','3')->where('asignatura_id','<>','29')->count();
        $aperturaPerido=AperturaPeriodo::getActivado();
        $porcentaje=0;
        $calificadas=0;
        if(!empty($aperturaPerido)){
-        $periodo_id=$aperturaPerido->periodo_id;      
+        $periodo_id=$aperturaPerido->periodo_id;
         $totalCal=Calificacion::getTotalCalificadas($periodo_id);
         $calificadas=count($totalCal);
         $porcentaje=round(($calificadas/$totalAsignacion)*100,2);
        }
-    
-      
+
+
 
        $contadores=[
         'sedes'=>$totalSede,
@@ -80,7 +80,7 @@ class EstadisticaController extends Controller
         //Listamos todos las sedes
        $sede=Docente::find($id)->sede->nombre;
        $totalAsignacion=CargaAcademica::where('docente_id', $id)->count();
-      
+
        $grados="";
        $direccionGrupo=DireccionGrado::where('docente_id', $id)->get();
         if(count(($direccionGrupo))){
@@ -101,8 +101,8 @@ class EstadisticaController extends Controller
         $avance=round(($calificadas/$totalAsignacion)*100,2);
       }
 
-       
-        
+
+
 
        $contadores=[
         'sede'=>$sede,

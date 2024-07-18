@@ -12,7 +12,7 @@ class Nivelacion extends Model
 
         protected $table = 'nivelaciones';
         protected $fillable = [ 'matricula_id','asignatura_id', 'periodo_id',
-         'nota', 'estado'];
+         'nota', 'notaanterior', 'notaperiodo', 'promedio', 'estado'];
 
 
         public function matricula()
@@ -46,8 +46,10 @@ class Nivelacion extends Model
             ->join('estudiantes as e', 'e.id', '=', 'm.estudiante_id')
             ->join('asignaturas as a', 'a.id', '=', 'n.asignatura_id')
             ->join('grados as g', 'g.id', '=', 'm.grado_id')
-            ->select('n.id', 'm.id as matricula_id', 'n.nota',
-             'e.apellidos', 'e.nombres', 'a.nombre', 'g.descripcion')
+            ->select('n.id', 'm.sede_id', 'm.grado_id', 'n.asignatura_id', 'm.id as matricula_id',
+            'n.nota', 'n.notaanterior', 'n.notaperiodo', 'n.promedio',
+             'e.apellidos', 'e.nombres', 'a.nombre', 'g.descripcion as grado',
+              'a.nombre as asignatura', 'n.periodo_id', 'n.created_at')
             ->where('m.grado_id', $grado)
             ->where('n.asignatura_id', $asignatura)
             ->where('n.periodo_id', $periodo)
@@ -61,7 +63,52 @@ class Nivelacion extends Model
             ->where('periodo_id', $periodo)->first();
         }
 
+        public static function getEstudiantesConPromedioBajo($sedeId, $gradoId, $asignaturaId, $periodoActualId,  $periodoAnteriorId )
+        {
 
+            $promedioMinimo = 3;
+
+            $query = "
+                SELECT m.id,
+                    CONCAT(e.apellidos, ' ', e.nombres) AS estudiante,
+                    COALESCE(
+                        (SELECT c2.nota
+                         FROM calificaciones c2
+                         WHERE c2.matricula_id = c.matricula_id
+                           AND c2.asignatura_id = c.asignatura_id
+                           AND c2.periodo_id = ?), 0) AS notaanterior,
+                    c.nota AS notaperiodo,
+                    ROUND(
+                        (
+                            COALESCE(
+                                (SELECT c2.nota
+                                 FROM calificaciones c2
+                                 WHERE c2.matricula_id = c.matricula_id
+                                   AND c2.asignatura_id = c.asignatura_id
+                                   AND c2.periodo_id = ?), 0) + c.nota
+                        ) / 2, 2) AS promedio
+                FROM calificaciones c
+                INNER JOIN matriculas m ON m.id = c.matricula_id
+                INNER JOIN estudiantes e ON e.id = m.estudiante_id
+                WHERE  m.grado_id = ?
+                  AND c.asignatura_id = ?
+                  AND c.periodo_id = ?
+                  AND m.sede_id = ?
+                HAVING promedio < ?;
+            ";
+
+            $results = DB::select($query, [
+                $periodoAnteriorId,
+                $periodoAnteriorId,
+                $gradoId,
+                $asignaturaId,
+                $periodoActualId,
+                $sedeId,
+                $promedioMinimo
+            ]);
+
+            return $results;
+        }
 
 
 

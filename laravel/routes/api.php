@@ -65,6 +65,8 @@ Route::prefix('v1')->group(function () {
            require __DIR__.'/v1/reportes.php';
            //Estadisticas
            require __DIR__.'/v1/estadistica.php';
+          //Nivelaciones
+        require __DIR__.'/v1/nivelacion.php';
 
     });
 });

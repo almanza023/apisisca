@@ -8,6 +8,7 @@ use App\Models\Calificacion;
 use App\Models\CargaAcademica;
 use App\Models\DireccionGrado;
 use App\Models\Grado;
+use App\Models\LogroPreescolar;
 use App\Models\Matricula;
 use App\Models\Nivelacion;
 use App\Models\Periodo;
@@ -32,21 +33,21 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class ReporteController extends Controller
 {
-    protected $user;   
+    protected $user;
     public function __construct(Request $request)
     {
-        $token = $request->header('Authorization');       
+        $token = $request->header('Authorization');
         if($token != '')
             //En caso de que requiera autentifiación la ruta obtenemos el usuario y lo almacenamos en una variable, nosotros no lo utilizaremos.
             $this->user = JWTAuth::parseToken()->authenticate();
     }
 
 
-    
 
-    
 
-    
+
+
+
     public function ReportEstadisticas(Request $request)
     {
         $validated = $request->validate([
@@ -61,7 +62,7 @@ class ReporteController extends Controller
         $pdf = app('Fpdf');
         $data=Puesto::getPuestos($grado, $periodo);
         if(count($data)>0){
-           
+
             $base64String= EstadisticaPeriodo::reporte($pdf, $data, $periodo);
             return response()->json([
                 'code'=>200,
@@ -178,10 +179,10 @@ class ReporteController extends Controller
         $cabecera=[];
         $grado=Grado::find($grado_id);
         $sede=Sede::find($sede_id);
-        $asiganatura=Asignatura::find($asignatura_id);      
+        $asiganatura=Asignatura::find($asignatura_id);
         $docente=CargaAcademica::getDocente($sede_id, $grado_id, $asignatura_id);
         $data=Calificacion::calificacionesPeriodo($sede_id, $grado_id, $asignatura_id, $periodo);
-      
+
         $cabecera=[
             'sede'=>$sede->nombre,
             'grado'=>$grado->descripcion,
@@ -196,7 +197,7 @@ class ReporteController extends Controller
             'pdf' => $base64String
         ], Response::HTTP_OK);
 
-        
+
     }
 
     public function ReporteMatriculas(Request $request)
@@ -204,18 +205,18 @@ class ReporteController extends Controller
         $base64String="";
         $validated = $request->validate([
             'sede_id' => 'required',
-            'grado_id' => 'required',          
+            'grado_id' => 'required',
         ]);
         $sede_id=$request->sede_id;
         $grado_id=$request->grado_id;
-       
+
 
         $data=[];
         $cabecera=[];
         $grado=Grado::find($grado_id);
-        $sede=Sede::find($sede_id);      
+        $sede=Sede::find($sede_id);
         $data=Matricula::listado($sede_id, $grado_id);
-      
+
         $cabecera=[
             'sede'=>$sede->nombre,
             'grado'=>$grado->descripcion,
@@ -227,7 +228,7 @@ class ReporteController extends Controller
             'pdf' => $base64String
         ], Response::HTTP_OK);
 
-        
+
     }
 
     public function ReportAreas(Request $request)
@@ -241,8 +242,8 @@ class ReporteController extends Controller
 
         $grado=$request->grado_id;
         $sede=$request->sede_id;
-        $periodo=$request->periodo_id;    
-        $area="";    
+        $periodo=$request->periodo_id;
+        $area="";
         if($request->asignatura_id=='MAT' ||
         $request->asignatura_id=='CAS'||
         $request->asignatura_id=='CNA' ||
@@ -260,7 +261,7 @@ class ReporteController extends Controller
                             case 'CSOC':
                                 $area=4;
                                 break;
-                
+
                 default:
                     # code...
                     break;
@@ -286,35 +287,35 @@ class ReporteController extends Controller
                             case 'CSOC':
                                 $area=4;
                                 break;
-                
+
                 default:
                     # code...
                     break;
-            }           
+            }
         }
-        
-       
+
+
         $pdf = app('Fpdf');
         $data=[];
         //MAT
         if($area==1){
-            $data=Calificacion::getAreaMat($sede, $grado, $periodo );       
+            $data=Calificacion::getAreaMat($sede, $grado, $periodo );
         }
         //CAS
         if($area==2){
-            $data=Calificacion::getAreaLen($sede, $grado, $periodo );       
-        }   
+            $data=Calificacion::getAreaLen($sede, $grado, $periodo );
+        }
         //MAT
         if($area==3){
-            $data=Calificacion::getAreaNat($sede, $grado, $periodo );       
+            $data=Calificacion::getAreaNat($sede, $grado, $periodo );
         }
         //CAS
         if($area==4){
-            $data=Calificacion::getAreasSoc($sede, $grado, $periodo );       
-        }     
-        
+            $data=Calificacion::getAreasSoc($sede, $grado, $periodo );
+        }
+
         if(count($data)>0){
-           
+
             $base64String= "";
             //MAT
             if($area==1){
@@ -323,15 +324,15 @@ class ReporteController extends Controller
             //CAS
             if($area==2){
                 $base64String= ReporteArea::reporteLenguaje($pdf, $data, $periodo);
-            }  
+            }
             //CNAT
-            if($area==3){             
+            if($area==3){
                 $base64String= ReporteArea::reporteNaturales($pdf, $data, $periodo, $grado);
             }
             //CSOC
             if($area==4){
                 $base64String= ReporteArea::reporteSociales($pdf, $data, $periodo, $grado);
-            } 
+            }
             return response()->json([
                 'code'=>200,
                 'pdf' => $base64String
@@ -342,6 +343,82 @@ class ReporteController extends Controller
                 'message' => 'No se encontrarón calificaciones'
             ], Response::HTTP_OK);
         }
+
+
+    }
+
+    public function ReporteValoraciones(Request $request)
+    {
+        $base64String="";
+        $validated = $request->validate([
+            'sede_id' => 'required',
+            'grado_id' => 'required',
+            'asignatura_id' => 'required',
+        ]);
+        $sede_id=$request->sede_id;
+        $grado_id=$request->grado_id;
+        $asignatura_id=$request->asignatura_id;
+
+
+        $data=[];
+        $cabecera=[];
+        $grado=Grado::find($grado_id);
+        $sede=Sede::find($sede_id);
+        $asiganatura=Asignatura::find($asignatura_id);
+        $docente=CargaAcademica::getDocente($sede_id, $grado_id, $asignatura_id);
+        $data=LogroPreescolar::getFiltro($sede_id, $grado_id, $asignatura_id);
+
+        $cabecera=[
+            'sede'=>$sede->nombre,
+            'grado'=>$grado->descripcion,
+            'asignatura'=>$asiganatura->nombre,
+            'docente'=>$docente->docente->nombres.' '.$docente->docente->apellidos,
+        ];
+        $pdf = app('Fpdf');
+        $base64String=ReporteNotas::reporteValoraciones($pdf, $cabecera, $data);
+        return response()->json([
+            'code'=>200,
+            'pdf' => $base64String
+        ], Response::HTTP_OK);
+
+
+    }
+
+    public function ReporteNivelaciones(Request $request)
+    {
+        $base64String="";
+        $validated = $request->validate([
+            'sede_id' => 'required',
+            'grado_id' => 'required',
+            'asignatura_id' => 'required',
+            'periodo_id' => 'required',
+        ]);
+        $sede_id=$request->sede_id;
+        $grado_id=$request->grado_id;
+        $asignatura_id=$request->asignatura_id;
+        $periodo=$request->periodo_id;
+
+        $data=[];
+        $cabecera=[];
+        $grado=Grado::find($grado_id);
+        $sede=Sede::find($sede_id);
+        $asiganatura=Asignatura::find($asignatura_id);
+        $docente=CargaAcademica::getDocente($sede_id, $grado_id, $asignatura_id);
+        $data=Nivelacion::nivelacionesPeriodo($sede_id, $grado_id, $asignatura_id, $periodo);
+
+        $cabecera=[
+            'sede'=>$sede->nombre,
+            'grado'=>$grado->descripcion,
+            'asignatura'=>$asiganatura->nombre,
+            'periodo'=>$periodo,
+            'docente'=>$docente->docente->nombres.' '.$docente->docente->apellidos,
+        ];
+        $pdf = app('Fpdf');
+        $base64String=ReporteNotas::reporteNivelacion($pdf, $cabecera, $data, $periodo);
+        return response()->json([
+            'code'=>200,
+            'pdf' => $base64String
+        ], Response::HTTP_OK);
 
 
     }
