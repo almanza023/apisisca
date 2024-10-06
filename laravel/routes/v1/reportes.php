@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\V1\CalificacionController;
 use App\Http\Controllers\V1\Reportes\BoletinController;
 use App\Http\Controllers\V1\Reportes\BoletinPreescolarController;
 use App\Http\Controllers\V1\Reportes\ReporteController;
@@ -15,5 +16,8 @@ use Illuminate\Support\Facades\Route;
 
         Route::post('reportes/valoraciones', [ReporteController::class, 'ReporteValoraciones']);
         Route::post('reportes/nivelaciones', [ReporteController::class, 'ReporteNivelaciones']);
+        Route::post('reportes/acumulativos', [ReporteController::class, 'ReporteNotasAcumuladas']);
+
+        Route::post('reportes/exportar-consolidado', [ReporteController::class, 'exportarConsolidado']);
 
 ?>

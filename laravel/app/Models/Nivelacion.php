@@ -111,6 +111,36 @@ class Nivelacion extends Model
         }
 
 
+        public static function getEstudiantesPerdidos($sedeId, $gradoId, $asignaturaId, $periodoId )
+        {
+
+            $promedioMinimo = 3;
+
+            $query = "
+                SELECT m.id,
+                    CONCAT(e.apellidos, ' ', e.nombres) AS estudiante,
+                    c.nota AS notaperiodo
+                FROM calificaciones c
+                INNER JOIN matriculas m ON m.id = c.matricula_id
+                INNER JOIN estudiantes e ON e.id = m.estudiante_id
+                WHERE  m.grado_id = ?
+                  AND c.asignatura_id = ?
+                  AND c.periodo_id = ?
+                  AND m.sede_id = ?
+                AND C.NOTA <?;
+            ";
+
+            $results = DB::select($query, [
+                $gradoId,
+                $asignaturaId,
+                $periodoId,
+                $sedeId,
+                $promedioMinimo
+            ]);
+
+            return $results;
+        }
+
 
 
 

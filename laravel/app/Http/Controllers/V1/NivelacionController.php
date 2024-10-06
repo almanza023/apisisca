@@ -87,9 +87,9 @@ class NivelacionController extends Controller
             }
             $matriculas=$request->input('matriculas');
             $notas=$request->input('notas');
-            $notasanteriores=$request->input('notasanterior');
+            //$notasanteriores=$request->input('notasanterior');
             $notasperiodo=$request->input('notasperiodo');
-            $promedios=$request->input('promedio');
+            //$promedios=$request->input('promedio');
 
 
             for ($i=0; $i < count($matriculas) ; $i++) {
@@ -97,25 +97,25 @@ class NivelacionController extends Controller
 
                 $matricula_id=$matriculas[$i];
                 $nota=$notas[$i];
-                $notaanterior=$notasanteriores[$i];
+                //$notaanterior=$notasanteriores[$i];
                 $notaperiodo=$notasperiodo[$i];
-                $promedio=$promedios[$i];
+                //$promedio=$promedios[$i];
 
-                $calificaciones=[];
-                if($request->periodo_id==1){
-                    $calificaciones=Calificacion::where('matricula_id', $matricula_id)
-                    ->where('asignatura_id', $request->asignatura_id)
-                    ->where('periodo_id', '<=',2)->get();
-                }else{
-                    $calificaciones=Calificacion::where('matricula_id', $matricula_id)
-                    ->where('asignatura_id', $request->asignatura_id)
-                    ->where('periodo_id', '>=',3)->get();
-                }
+                //$calificaciones=[];
+                // if($request->periodo_id==1){
+                //     $calificaciones=Calificacion::where('matricula_id', $matricula_id)
+                //     ->where('asignatura_id', $request->asignatura_id)
+                //     ->where('periodo_id', '<=',2)->get();
+                // }else{
+                //     $calificaciones=Calificacion::where('matricula_id', $matricula_id)
+                //     ->where('asignatura_id', $request->asignatura_id)
+                //     ->where('periodo_id', '>=',3)->get();
+                // }
 
-                foreach ($calificaciones as $calificacion) {
-                    $calificacion->nota=$nota;
-                    $calificacion->save();
-                }
+                // foreach ($calificaciones as $calificacion) {
+                //     $calificacion->nota=$nota;
+                //     $calificacion->save();
+                // }
 
                 $nivelacion=Nivelacion::updateOrCreate(
                     ['matricula_id'=>$matricula_id,
@@ -126,9 +126,9 @@ class NivelacionController extends Controller
                         'asignatura_id'=>$request->asignatura_id,
                         'periodo_id'=>$request->periodo_id,
                         'nota'=>$nota,
-                        'notaanterior'=>$notaanterior,
+                        'notaanterior'=>'',
                         'notaperiodo'=>$notaperiodo,
-                        'promedio'=>$promedio,
+                        'promedio'=>'',
                 ]);
 
             }
@@ -233,20 +233,21 @@ class NivelacionController extends Controller
            return response()->json([
                'code'=>300,
                'data' => [],
-               'message' => 'Ya existen Nivelaciones  Para la Sede, Grado, Asignatura y semestre seleccionado '
+               'message' => 'Ya existen Nivelaciones  Para la Sede, Grado, Asignatura y Periodo seleccionado '
            ], Response::HTTP_OK);
        }
-       $periodoActual=0;
-       $PeriodoAnterior=0;
-       if($request->periodo_id==1){
-            $PeriodoAnterior=1;
-            $periodoActual=2;
-       }else{
-            $PeriodoAnterior=3;
-            $periodoActual=4;
-       }
+    //    $periodoActual=0;
+    //    $PeriodoAnterior=0;
+    //    if($request->periodo_id==1){
+    //         $PeriodoAnterior=1;
+    //         $periodoActual=2;
+    //    }else{
+    //         $PeriodoAnterior=3;
+    //         $periodoActual=4;
+    //    }
 
-       $data=$this->model::getEstudiantesConPromedioBajo($request->sede_id, $request->grado_id, $request->asignatura_id, $periodoActual, $PeriodoAnterior);
+    $data=$this->model::getEstudiantesPerdidos($request->sede_id, $request->grado_id, $request->asignatura_id, $request->periodo_id);
+    //$data=$this->model::getEstudiantesConPromedioBajo($request->sede_id, $request->grado_id, $request->asignatura_id, $periodoActual, $PeriodoAnterior);
        //$data=$this->model::getEstudiantesBajo($request->sede_id, $request->grado_id, $request->asignatura_id, $periodoActual, $PeriodoAnterior );
        if($data){
         return response()->json([
@@ -284,7 +285,7 @@ class NivelacionController extends Controller
         return response()->json([
             'code'=>300,
             'data' => [],
-            'message' => 'No Existen Nivelaciones Para la Sede, Grado, Asignatura y semestre seleccionado. Debe Primero registrar las notas '
+            'message' => 'No Existen Nivelaciones Para la Sede, Grado, Asignatura y Periodo seleccionado. Debe Primero registrar las notas '
         ], Response::HTTP_OK);
        }
        if($data){

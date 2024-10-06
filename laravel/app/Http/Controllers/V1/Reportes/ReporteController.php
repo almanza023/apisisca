@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\V1\Reportes;
 
+use App\Exports\CalificacionesExport;
 use App\Http\Controllers\Controller;
 use App\Models\Asignatura;
 use App\Models\Calificacion;
@@ -28,6 +29,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\Response;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -423,6 +425,120 @@ class ReporteController extends Controller
 
     }
 
+    public function ReporteNotasAcumuladas(Request $request)
+    {
+        $base64String="";
+        $validated = $request->validate([
+            'sede_id' => 'required',
+            'grado_id' => 'required',
+            'asignatura_id' => 'required',
+            'periodo_id' => 'required',
+        ]);
+        $sede_id=$request->sede_id;
+        $grado_id=$request->grado_id;
+        $asignatura_id=$request->asignatura_id;
+        $periodo=$request->periodo_id;
+
+        $data=[];
+        $cabecera=[];
+        $grado=Grado::find($grado_id);
+        $sede=Sede::find($sede_id);
+        $asiganatura=Asignatura::find($asignatura_id);
+        $docente=CargaAcademica::getDocente($sede_id, $grado_id, $asignatura_id);
+
+
+        $matriculas=Matricula::estudiantesCalificacion($sede_id, $grado_id);
+         $data=[];
+
+        foreach ($matriculas as $mat) {
+            $promg=0;
+            $cal1=Calificacion::notaAnteriorEst($mat->id, $asignatura_id, 1);
+            if($cal1==''){
+                $cal1=0;
+            }
+            $cal2=Calificacion::notaAnteriorEst($mat->id, $asignatura_id, 2);
+            if($cal2==''){
+                $cal2=0;
+            }
+            $cal3=Calificacion::notaAnteriorEst($mat->id, $asignatura_id, 3);
+            if($cal3==''){
+                $cal3=0;
+            }
+            $promg=($cal1+$cal2+$cal3)/3;
+            $rpromg=round($promg, 2);
+            $temp=[
+                'nombre'=>utf8_decode($mat->apellidos.' '.$mat->nombres),
+                'notap1'=>$cal1,
+                'notap2'=>$cal2,
+                'notap3'=>$cal3,
+                'promedio'=>$rpromg
+            ];
+            array_push($data, $temp);
+        }
+
+
+        $cabecera=[
+            'sede'=>$sede->nombre,
+            'grado'=>$grado->descripcion,
+            'asignatura'=>$asiganatura->nombre,
+            'periodo'=>$periodo,
+            'docente'=>$docente->docente->nombres.' '.$docente->docente->apellidos,
+        ];
+        $pdf = app('Fpdf');
+        $base64String=ReporteNotas::reporteAcumulativos($pdf, $cabecera, $data, $periodo);
+        return response()->json([
+            'code'=>200,
+            'pdf' => $base64String
+        ], Response::HTTP_OK);
+
+
+    }
+
+    public function exportarConsolidado(Request $request)
+    {
+        // Parámetros para el procedimiento
+        $gradoId = $request->grado_id; // Cambia estos valores según tus necesidades
+        $sedeId = $request->sede_id;
+        $asignaturas=CargaAcademica::where('sede_id', $sedeId)
+        ->where('grado_id', $gradoId)->orderBy('asignatura_id', 'asc')->get();
+        $asignaturaId="";
+        $totalAsignaturas=count($asignaturas);
+        if($totalAsignaturas>0){
+            foreach ($asignaturas as $item) {
+               $asignaturaId.=$item->asignatura_id.',';
+            }
+            $asignaturaId = "'".rtrim($asignaturaId, ',')."'";
+        }
+
+        $estado = 1;
+        // Llamada al procedimiento almacenado
+        $sql="CALL obtener_consolidado(".$asignaturaId.",".$gradoId.",".$sedeId.",".$estado.")";
+        try {
+
+            $query = DB::select(DB::raw($sql));
+            $resultados= DB::select($query[0]->sql_query);
+
+        } catch (\Exception $e) {
+            return $e->getMessage();
+        }
+
+        // Aquí puedes proceder a exportar a Excel
+        return $this->exportarAExcel($resultados, $totalAsignaturas);
+    }
+
+    public function exportarAExcel($resultados, $totalAsignaturas)
+    {
+        $excelFile = Excel::raw(new CalificacionesExport($resultados, $totalAsignaturas), \Maatwebsite\Excel\Excel::XLSX);
+
+        // Codifica el archivo en Base64
+        $base64File = base64_encode($excelFile);
+        return response()->json([
+            'code'=>200,
+            'pdf' => $base64File
+        ], Response::HTTP_OK);
+
+
+    }
 
 
 }
