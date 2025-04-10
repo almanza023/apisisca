@@ -57,24 +57,34 @@ class Calificacion extends Model
         ->where('periodo_id', $periodo)->get();
     }
 
-     public static function notaAnteriorEst($matricula, $asignatura, $periodo){
+    public static function notaAnteriorEst($matricula, $asignatura, $periodo)
+    {
+        // Obtener la calificación correspondiente
+        $cal = Calificacion::where('matricula_id', $matricula)
+            ->where('asignatura_id', $asignatura)
+            ->where('periodo_id', $periodo)
+            ->first();
 
-        $cal=Calificacion::where('matricula_id', $matricula)->where('asignatura_id', $asignatura)
-        ->where('periodo_id', $periodo)->first();
-        if(empty($cal)){
-            return '';
-        }else{
-            if(!empty($cal) && $cal->nota<3){
-            $niv=Nivelacion::getNivelacion($matricula, $asignatura, $periodo);
-            if(empty($niv)){
+        // Si no existe la calificación, devolver 0
+        if (empty($cal)) {
+            return 0;
+        }
+
+        // Si la calificación es menor que 3, buscar nivelación
+        if ($cal->nota < 3) {
+            $niv = Nivelacion::getNivelacion($matricula, $asignatura, $periodo);
+
+            // Si no hay nivelación, devolver la calificación
+            if (empty($niv)) {
                 return $cal->nota;
-            }else{
-                return $niv->nota;
             }
-        }else{
-            return $cal->nota;
+
+            // Si hay nivelación, devolver la nota de nivelación
+            return $niv->nota;
         }
-        }
+
+        // Si la calificación es 3 o mayor, devolverla directamente
+        return $cal->nota;
     }
 
     public static function calificacionesPeriodo($sede, $grado, $asignatura, $periodo){
@@ -210,62 +220,39 @@ class Calificacion extends Model
         ->get();
     }
 
-    public static function calificacionesFinales($sede, $grado, $asignatura){
-        $calificaciones=[];
+    public static function calificacionesFinales($matricula_id, $asignatura_id)
+    {
 
-         $calif= DB::table('calificaciones as c')
-         ->join('matriculas as m', 'm.id', '=', 'c.matricula_id')
-         ->join('estudiantes as es', 'es.id', '=', 'm.estudiante_id')
-         ->where('m.sede_id', $sede)
-         ->where('m.grado_id', $grado)
-         ->where('c.asignatura_id', $asignatura)
-         ->where('c.periodo_id', 4)
-         ->select('c.matricula_id', 'c.asignatura_id', 'c.nota', 'es.nombres', 'es.apellidos')
-         ->get();
-         foreach ($calif as $cal) {
-            $p1=0;
-            $p2=0;
-            $p3=0;
-            $p4=0;
-            $periodo1=Calificacion::notaAnteriorEst($cal->matricula_id, $cal->asignatura_id, 1);
-            if(!empty($periodo1)){
-                $p1=$periodo1->nota;
-            }
-            $periodo2=Calificacion::notaAnteriorEst($cal->matricula_id, $cal->asignatura_id, 2);
-            if(!empty($periodo2)){
-                $p2=$periodo2->nota;
-            }
-            $periodo3=Calificacion::notaAnteriorEst($cal->matricula_id, $cal->asignatura_id, 3);
-            if(!empty($periodo3)){
-                $p3=$periodo3->nota;
-            }
-            if(!empty($cal)){
-                $p4=$cal->nota;
-            }
-            $nivFinal=Nivelacion::getNivelacion($cal->matricula_id, $cal->asignatura_id, 5);
-            if(!empty($nivFinal)){
-                $notaNiv=$nivFinal->nota;
-            }else{
-                $notaNiv='';
-            }
 
-            $promedio=round(($p1+$p2+$p3+$p4)/4, 1);
+        // Inicializar las variables para los periodos
+        $periodos = [];
+        for ($i = 1; $i <= 4; $i++) {
+            $periodo = Calificacion::notaAnteriorEst($matricula_id, $asignatura_id, $i);
 
-             $temp=[
-                 'matricula_id'=>$cal->matricula_id,
-                 'estudiante'=>$cal->apellidos.' '.$cal->nombres,
-                 'periodo1'=>$p1,
-                 'periodo2'=>$p2,
-                 'periodo3'=>$p3,
-                 'periodo4'=>$p4,
-                 'promedio'=>$promedio,
-                 'nivelacion'=>$notaNiv,
-             ];
-            array_push($calificaciones, $temp);
+            // Verificar si el valor devuelto es un objeto con propiedad `nota` o un valor float
+            if (is_object($periodo) && property_exists($periodo, 'nota')) {
+                $periodos[$i] = $periodo->nota;
+            } else {
+                $periodos[$i] = $periodo; // Suponemos que si es float, se asigna directamente
+            }
+        }
 
-         }
-         return ($calificaciones);
-     }
+        // Calcular el promedio solo con los periodos con notas mayores que 0
+        $validPeriodos = array_filter($periodos, fn($nota) => $nota > 0);
+        $promedio = count($validPeriodos) > 0 ? round(array_sum($validPeriodos) / count($validPeriodos), 1) : 0;
+
+        // Crear la estructura de respuesta
+        $calificaciones = [
+            'matricula_id' => $matricula_id,
+            'periodo1' => $periodos[1],
+            'periodo2' => $periodos[2],
+            'periodo3' => $periodos[3],
+            'periodo4' => $periodos[4],
+            'promedio' => $promedio,
+        ];
+
+        return $calificaciones;
+    }
 
      public static function notasFinalesEstudiante($matricula, $asignatura){
         $calificaciones=[];

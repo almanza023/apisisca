@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Matricula;
 use App\Models\Reportes\BoletinDos;
 use App\Models\Reportes\BoletinFinalDos;
+use App\Models\Reportes\BoletinFinalTres;
 use App\Models\Reportes\BoletinFinalUno;
 use App\Models\Reportes\BoletinTres;
 use App\Models\Reportes\BoletinUno;
@@ -18,11 +19,11 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class BoletinController extends Controller
 {
-    protected $user;   
+    protected $user;
 
     public function __construct(Request $request)
     {
-        $token = $request->header('Authorization');       
+        $token = $request->header('Authorization');
         if($token != '')
             //En caso de que requiera autentifiación la ruta obtenemos el usuario y lo almacenamos en una variable, nosotros no lo utilizaremos.
             $this->user = JWTAuth::parseToken()->authenticate();
@@ -62,19 +63,24 @@ class BoletinController extends Controller
     public function boletinesFinales(Request $request)
     {
         $validated = $request->validate([
-            'sede' => 'required',
-            'grado' => 'required',
+            'sede_id' => 'required',
+            'grado_id' => 'required',
         ]);
-        $grado=$request->grado;
-        $sede=$request->sede;
+        $grado=$request->grado_id;
+        $sede=$request->sede_id;
         $pdf = app('Fpdf');
+
         if($grado>=3 && $grado<=4){
-            BoletinFinalUno::reporte($sede, $grado, $pdf);
+            $base64String=BoletinFinalUno::reporte($sede, $grado, $pdf);
         }else if($grado>=5 && $grado<=7){
-            BoletinFinalDos::reporte($sede, $grado, $pdf);
+            $base64String=BoletinFinalDos::reporte($sede, $grado, $pdf);
         }else if($grado>=8 && $grado<=13){
-            //BoletinTres::reporte($sede, $grado, $pdf);
+            $base64String=BoletinFinalTres::reporte($sede, $grado, $pdf);
         }
+        return response()->json([
+            'code'=>200,
+            'pdf' => $base64String
+        ], Response::HTTP_OK);
     }
 
     public function consolidados(Request $request)
@@ -98,8 +104,6 @@ class BoletinController extends Controller
         }else if($grado>=8 && $grado<=13){
             $base64String=ConsolidadoTres::reporte($sede, $grado, $periodo, $pdf, $matriculas);
         }
-
-
         return response()->json([
             'code'=>200,
             'pdf' => $base64String

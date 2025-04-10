@@ -41,9 +41,22 @@ class ObservacionFinal extends Model
         ->join('matriculas as m', 'm.id', '=', 'ob.matricula_id')
         ->join('estudiantes as e', 'e.id', '=', 'm.estudiante_id')
         ->join('grados as g', 'g.id', '=', 'm.grado_id')
-        ->select('ob.id', 'm.id as matricula_id', 'ob.logro',  'e.apellidos', 'e.nombres', 'g.descripcion')
+        ->join('sedes as s', 's.id', '=', 'm.sede_id')
+        ->select('ob.id', 'm.id as matricula_id', 'ob.logro',  'e.apellidos',
+        'e.nombres', 'g.descripcion as grado', 's.nombre as sede', 'ob.created_at')
         ->where('m.grado_id', $grado)
         ->where('m.sede_id', $sede)
+        ->orderBy('e.apellidos', 'asc')
+        ->get();
+    }
+
+    public static function estudiantesListado($sede, $grado){
+        return DB::table('matriculas as m')
+        ->join('estudiantes as e', 'e.id', '=', 'm.estudiante_id')
+        ->where('m.sede_id', $sede)
+        ->where('m.grado_id', $grado)
+        ->where('m.situacion', 'ACTIVO')
+        ->select('m.id', 'm.estudiante_id', 'e.apellidos', 'e.nombres')
         ->orderBy('e.apellidos', 'asc')
         ->get();
     }

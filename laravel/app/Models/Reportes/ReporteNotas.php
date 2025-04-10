@@ -186,7 +186,7 @@ class ReporteNotas extends Model
         $pdf->Ln(4);
 
         $pdf->Cell(120, 6, utf8_decode('AREA/ASIGNATURA: ') . utf8_decode($cabecera['asignatura']), 0, 0, 'J');
-        $pdf->Cell(150, 6, 'PERIODO: ' . $periodo, 0, 0, 'J');
+        $pdf->Cell(150, 6, 'GRADO: ' . $cabecera["grado"], 0, 0, 'J');
         $pdf->SetY(48);
         $pdf->Cell(120, 6, 'DOCENTE: ' . utf8_decode($cabecera['docente']), 0, 0, 'J');
         $pdf->SetY(48);
@@ -200,10 +200,18 @@ class ReporteNotas extends Model
         $pdf->SetFont('Arial', 'B', 8);
         $pdf->Cell(10, 6, utf8_decode('N°'), 1, 0, 'C', 1);
         $pdf->Cell(80, 6, utf8_decode('ESTUDIANTE'), 1, 0, 'J', 1);
-        $pdf->Cell(20, 6, utf8_decode('P1'), 1, 0, 'J', 1);
-        $pdf->Cell(20, 6, utf8_decode('P2'), 1, 0, 'J', 1);
-        $pdf->Cell(20, 6, utf8_decode('P3'), 1, 0, 'J', 1);
-        $pdf->Cell(20, 6, utf8_decode('PROM'), 1, 0, 'J', 1);
+        $pdf->Cell(15, 6, utf8_decode('P1'), 1, 0, 'J', 1);
+        $pdf->Cell(15, 6, utf8_decode('P2'), 1, 0, 'J', 1);
+        $pdf->Cell(15, 6, utf8_decode('P3'), 1, 0, 'J', 1);
+        if($periodo==3){
+            $pdf->Cell(15, 6, utf8_decode('P4 Min'), 1, 0, 'J', 1);
+        }else{
+             $pdf->Cell(15, 6, utf8_decode('P4'), 1, 0, 'J', 1);
+        }
+        $pdf->Cell(15, 6, utf8_decode('PROM'), 1, 0, 'J', 1);
+        if($cabecera['porcentaje']!=100){
+            $pdf->Cell(20, 6, utf8_decode('DEF AREA'), 1, 0, 'J', 1);
+        }
         $pdf->Ln();
         $i=0;
 
@@ -213,19 +221,19 @@ class ReporteNotas extends Model
             $pdf->SetFont('Arial', '', 8);
             $pdf->Cell(10, 6, $i, 1, 0, 'J');
             $pdf->Cell(80, 6, $item['nombre'], 1, 0, 'J');
-            $pdf->Cell(20, 6, $item['notap1'], 1, 0, 'J');
-            $pdf->Cell(20, 6, $item['notap2'], 1, 0, 'J');
-            $pdf->Cell(20, 6, $item['notap3'], 1, 0, 'J');
-            $pdf->Cell(20, 6, $item['promedio'], 1, 0, 'J');
-
+            $pdf->Cell(15, 6, $item['notap1'], 1, 0, 'J');
+            $pdf->Cell(15, 6, $item['notap2'], 1, 0, 'J');
+            $pdf->Cell(15, 6, $item['notap3'], 1, 0, 'J');
+            $pdf->Cell(15, 6, $item['notaminima'], 1, 0, 'C');
+            $pdf->Cell(15, 6, $item['promedio'], 1, 0, 'J');
+            if($cabecera['porcentaje']!=100){
+                $pdf->Cell(20, 6, $item['defarea'], 1, 0, 'J', 1);
+            }
             $pdf->Ln();
         }
 
         $base64String = chunk_split(base64_encode($pdf->Output('S')));
         return $base64String;
         exit;
-
-
-
     }
 }

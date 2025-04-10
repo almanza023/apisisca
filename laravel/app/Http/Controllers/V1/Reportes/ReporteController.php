@@ -445,7 +445,7 @@ class ReporteController extends Controller
         $sede=Sede::find($sede_id);
         $asiganatura=Asignatura::find($asignatura_id);
         $docente=CargaAcademica::getDocente($sede_id, $grado_id, $asignatura_id);
-
+        $porcentaje=$docente->porcentaje;
 
         $matriculas=Matricula::estudiantesCalificacion($sede_id, $grado_id);
          $data=[];
@@ -464,14 +464,29 @@ class ReporteController extends Controller
             if($cal3==''){
                 $cal3=0;
             }
-            $promg=($cal1+$cal2+$cal3)/3;
-            $rpromg=round($promg, 2);
+            $notaminima=0;
+            $cal4=Calificacion::notaAnteriorEst($mat->id, $asignatura_id, 4);
+            if($cal4==''){
+                $cal3=0;
+                 $notaminima=12-($cal1+$cal2+$cal3);
+            }else{
+                $notaminima=$cal4;
+            }
+            $promg=($cal1+$cal2+$cal3+$cal4)/$periodo;
+            $rpromg=round($promg, 1);
+
+            if($notaminima<0){
+                $notaminima='-';
+            }
+            $defarea=round($rpromg*($porcentaje/100), 1);
             $temp=[
                 'nombre'=>utf8_decode($mat->apellidos.' '.$mat->nombres),
                 'notap1'=>$cal1,
                 'notap2'=>$cal2,
                 'notap3'=>$cal3,
-                'promedio'=>$rpromg
+                'notaminima'=>$notaminima,
+                'promedio'=>$rpromg,
+                'defarea'=>$defarea,
             ];
             array_push($data, $temp);
         }
@@ -483,6 +498,7 @@ class ReporteController extends Controller
             'asignatura'=>$asiganatura->nombre,
             'periodo'=>$periodo,
             'docente'=>$docente->docente->nombres.' '.$docente->docente->apellidos,
+            'porcentaje'=>$porcentaje,
         ];
         $pdf = app('Fpdf');
         $base64String=ReporteNotas::reporteAcumulativos($pdf, $cabecera, $data, $periodo);
